@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNP Online Voting</title>
+
+    <!-- PWA and Mobile App Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BNP Vote">
+    <meta name="application-name" content="BNP Vote">
+    <meta name="theme-color" content="#006838">
+    <link rel="manifest" href="data:application/manifest+json,{
+        &quot;name&quot;: &quot;BNP Online Voting&quot;,
+        &quot;short_name&quot;: &quot;BNP Vote&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#ffffff&quot;,
+        &quot;theme_color&quot;: &quot;#006838&quot;,
+        &quot;description&quot;: &quot;Online voting application for Baringo National Polytechnic.&quot;,
+        &quot;icons&quot;: [
+            {
+                &quot;src&quot;: &quot;https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png&quot;,
+                &quot;sizes&quot;: &quot;192x192&quot;,
+                &quot;type&quot;: &quot;image/png&quot;
+            },
+            {
+                &quot;src&quot;: &quot;https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png&quot;,
+                &quot;sizes&quot;: &quot;512x512&quot;,
+                &quot;type&quot;: &quot;image/png&quot;
+            }
+        ]
+    }">
+    <link rel="apple-touch-icon" href="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Color scheme from the BNP logo */
+        :root {
+            --bnp-green: #006838;
+            --bnp-orange: #F37021;
+        }
+        .bg-bnp-green { background-color: var(--bnp-green); }
+        .bg-bnp-orange { background-color: var(--bnp-orange); }
+        .text-bnp-green { color: var(--bnp-green); }
+        .text-bnp-orange { color: var(--bnp-orange); }
+        .border-bnp-green { border-color: var(--bnp-green); }
+        .border-bnp-orange { border-color: var(--bnp-orange); }
+        .ring-bnp-orange:focus { ring-color: var(--bnp-orange); }
+
+        /* Custom styles for a better look and feel */
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .candidate-card {
+            transition: all 0.3s ease;
+        }
+        .candidate-card.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px var(--bnp-orange);
+            border-color: var(--bnp-orange);
+        }
+        .hidden {
+            display: none;
+        }
+        .loader-container {
+            background-color: white;
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--bnp-green);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Main Container -->
+    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative">
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loader-container hidden">
+            <div class="loader"></div>
+            <p class="mt-4 text-bnp-green">Loading...</p>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="p-8 flex flex-col items-center justify-center min-h-screen">
+            <img src="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png" alt="BNP Logo" class="w-40 h-40 mb-6 mx-auto">
+            <h1 class="text-2xl font-bold text-bnp-green mb-2 text-center">BNP Online Voting</h1>
+            <p class="text-gray-600 mb-8 text-center">Please sign in to continue</p>
+            <button id="google-signin-btn" class="bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg btn flex items-center justify-center w-full max-w-xs">
+                <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google Logo" class="w-6 h-6 mr-4">
+                Sign in with Google
+            </button>
+             <div class="mt-12 text-center w-full">
+                <div id="login-error" class="text-red-600 bg-red-100 border border-red-400 rounded-lg p-4 mt-4 text-sm text-left hidden"></div>
+                <button id="setup-data-btn" class="text-sm text-bnp-orange hover:underline mt-4">Admin: Setup/Reset Election Data</button>
+                <p id="setup-feedback" class="text-bnp-green text-xs mt-2"></p>
+            </div>
+        </div>
+
+        <!-- Main App Content (hidden by default) -->
+        <div id="main-app" class="hidden">
+            <!-- App Header -->
+            <header class="bg-bnp-green text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-10">
+                 <div class="flex items-center">
+                    <img src="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png" alt="BNP Logo" class="w-10 h-10 mr-2">
+                    <h1 class="text-xl font-bold">BNP E-Vote</h1>
+                </div>
+                <div class="text-right">
+                    <p id="user-id-display" class="text-sm font-medium truncate" title="Your User ID"></p>
+                    <button id="logout-btn" class="font-semibold text-xs hover:underline">Logout</button>
+                </div>
+            </header>
+
+            <!-- Navigation -->
+            <nav class="flex justify-around bg-white p-2 shadow-md sticky top-[72px] z-10">
+                <button data-page="vote-page" class="nav-btn text-bnp-green font-bold py-2 px-4 rounded-lg">Vote</button>
+                <button data-page="results-page" class="nav-btn text-gray-600 font-bold py-2 px-4 rounded-lg">Results</button>
+            </nav>
+
+            <!-- Vote Page -->
+            <div id="vote-page" class="page p-6">
+                <div id="voted-message" class="hidden text-center p-6 bg-green-100 text-green-800 rounded-lg">
+                    <h2 class="text-2xl font-bold mb-2">Thank You!</h2>
+                    <p>You have successfully cast your vote.</p>
+                </div>
+                <div id="voting-section">
+                    <h2 class="text-2xl font-bold text-bnp-green mb-6">Cast Your Vote</h2>
+                    <div id="positions-container" class="space-y-8">
+                        <!-- Positions and Candidates will be loaded here -->
+                    </div>
+                    <button id="submit-vote-btn" class="w-full mt-8 bg-bnp-orange text-white font-bold py-3 rounded-lg btn">Submit My Vote</button>
+                    <p id="vote-error" class="text-red-500 text-sm mt-4 text-center h-4"></p>
+                </div>
+            </div>
+
+            <!-- Results Page -->
+            <div id="results-page" class="page hidden p-6">
+                <h2 class="text-2xl font-bold text-bnp-green mb-6">Live Election Results</h2>
+                <div id="results-container" class="space-y-8">
+                    <!-- Results will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, writeBatch, onSnapshot, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- User's Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBV9ac_djaRjK83iwB7fxcZkT_zmBeY3pY",
+            authDomain: "bnpapp-6c608.firebaseapp.com",
+            projectId: "bnpapp-6c608",
+            storageBucket: "bnpapp-6c608.appspot.com", // Corrected storage bucket domain
+            messagingSenderId: "764750771159",
+            appId: "1:764750771159:web:0cd4a12272f4185c919192",
+            measurementId: "G-NDNM93N853"
+        };
+        const appId = firebaseConfig.projectId; // Use projectId as the app identifier
+
+        // --- Initialize Firebase ---
+        let app, auth, db;
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loginPage = document.getElementById('login-page');
+        const mainApp = document.getElementById('main-app');
+        const loginError = document.getElementById('login-error');
+
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            loginError.textContent = 'Firebase initialization failed.';
+            loginError.classList.remove('hidden');
+            loginPage.classList.remove('hidden');
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        // --- DOM Elements ---
+        const googleSigninBtn = document.getElementById('google-signin-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const pages = document.querySelectorAll('.page');
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const positionsContainer = document.getElementById('positions-container');
+        const resultsContainer = document.getElementById('results-container');
+        const votedMessage = document.getElementById('voted-message');
+        const votingSection = document.getElementById('voting-section');
+        const submitVoteBtn = document.getElementById('submit-vote-btn');
+        const voteError = document.getElementById('vote-error');
+        const setupDataBtn = document.getElementById('setup-data-btn');
+        const setupFeedback = document.getElementById('setup-feedback');
+        const userIdDisplay = document.getElementById('user-id-display');
+
+        let currentUser = null;
+        let positions = {};
+        let userSelections = {};
+        let resultsUnsubscribe = null;
+
+        // --- UTILITY FUNCTIONS ---
+        const showLoader = (show) => {
+            loadingOverlay.classList.toggle('hidden', !show);
+        };
+
+        const showPage = (pageId) => {
+            pages.forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+
+            navBtns.forEach(btn => {
+                btn.classList.toggle('text-bnp-green', btn.dataset.page === pageId);
+                btn.classList.toggle('text-gray-600', btn.dataset.page !== pageId);
+            });
+            
+            if (pageId === 'results-page' && !resultsUnsubscribe) {
+                listenToResults();
+            } else if (pageId !== 'results-page' && resultsUnsubscribe) {
+                resultsUnsubscribe();
+                resultsUnsubscribe = null;
+            }
+        };
+
+        // --- AUTHENTICATION ---
+        const signInWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
+            showLoader(true);
+            loginError.classList.add('hidden'); // Clear previous errors
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Google Sign-In failed:", error);
+                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/configuration-not-found') {
+                    loginError.innerHTML = `
+                        <div class="text-left">
+                            <h3 class="font-bold text-lg text-red-800 mb-2 flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Action Required: Unauthorized Domain
+                            </h3>
+                            <p class="mb-3">Google Sign-In is blocked. This is a configuration issue in your Firebase project, not a code bug.</p>
+                            <p class="font-bold mb-1">To fix this, follow these steps:</p>
+                            <ol class="list-decimal list-inside space-y-2 text-sm">
+                                <li>
+                                    Open your Firebase project's Authentication settings by clicking this link:<br>
+                                    <a href="https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings" target="_blank" class="text-blue-600 underline font-semibold">Open Firebase Auth Settings</a>
+                                </li>
+                                <li>
+                                    Under the "Sign-in method" tab, scroll to the "Authorized domains" section.
+                                </li>
+                                <li>
+                                    Click the <strong class="text-black">"Add domain"</strong> button.
+                                </li>
+                                <li>
+                                    Copy the domain below and paste it into the text box:
+                                    <div class="my-2 p-2 bg-gray-200 text-black font-mono rounded text-center select-all">${window.location.hostname}</div>
+                                </li>
+                                <li>
+                                    Click "Add", then come back to this page and <strong class="text-black">refresh</strong> to try again.
+                                </li>
+                            </ol>
+                        </div>`;
+                    loginError.classList.remove('hidden');
+                } else {
+                    loginError.textContent = "Google Sign-In Failed. Please try again.";
+                    loginError.classList.remove('hidden');
+                }
+                showLoader(false);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            showLoader(true);
+            if (user) {
+                const userDocRef = doc(db, `users`, user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    currentUser = { uid: user.uid, ...userDoc.data() };
+                } else {
+                    const newUser = {
+                        uid: user.uid,
+                        displayName: user.displayName,
+                        email: user.email,
+                        hasVoted: false,
+                        createdAt: new Date().toISOString()
+                    };
+                    await setDoc(userDocRef, newUser);
+                    currentUser = newUser;
+                }
+                userIdDisplay.textContent = currentUser.displayName || currentUser.email;
+                await initializeAppState();
+            } else {
+                currentUser = null;
+                showLoginPage();
+            }
+            showLoader(false);
+        });
+
+        const handleLogout = async () => {
+            if (resultsUnsubscribe) resultsUnsubscribe();
+            await signOut(auth);
+            showLoginPage();
+        };
+        
+        const showLoginPage = () => {
+            mainApp.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            loadingOverlay.classList.add('hidden');
+        };
+
+        // --- APP INITIALIZATION ---
+        const initializeAppState = async () => {
+            loginPage.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            showPage('vote-page');
+            await fetchPositions();
+            if (currentUser.hasVoted) {
+                showVotedMessage();
+            } else {
+                showVotingSection();
+            }
+        };
+        
+        const showVotedMessage = () => {
+            votingSection.classList.add('hidden');
+            votedMessage.classList.remove('hidden');
+        };
+        
+        const showVotingSection = () => {
+            votedMessage.classList.add('hidden');
+            votingSection.classList.remove('hidden');
+            renderVotingPage();
+        };
+
+        // --- VOTING LOGIC ---
+        const fetchPositions = async () => {
+            positions = {};
+            const positionsCollectionRef = collection(db, "positions");
+            const querySnapshot = await getDocs(positionsCollectionRef);
+            querySnapshot.forEach((doc) => {
+                positions[doc.id] = doc.data();
+            });
+        };
+
+        const renderVotingPage = () => {
+            positionsContainer.innerHTML = '';
+            userSelections = {};
+            if (Object.keys(positions).length === 0) {
+                positionsContainer.innerHTML = `<p class="text-center text-gray-500">The election has not been set up yet. Please check back later.</p>`;
+                submitVoteBtn.classList.add('hidden');
+                return;
+            }
+            submitVoteBtn.classList.remove('hidden');
+            Object.entries(positions).forEach(([id, position]) => {
+                const positionDiv = document.createElement('div');
+                positionDiv.innerHTML = `<h3 class="text-xl font-semibold text-bnp-orange mb-4">${position.title}</h3>`;
+                
+                const candidatesGrid = document.createElement('div');
+                candidatesGrid.className = 'grid grid-cols-2 gap-4';
+                candidatesGrid.dataset.positionId = id;
+
+                position.candidates.forEach(candidate => {
+                    const card = document.createElement('div');
+                    card.className = 'candidate-card border border-gray-200 rounded-lg p-3 text-center cursor-pointer';
+                    card.dataset.candidateId = candidate.id;
+                    card.innerHTML = `
+                        <img src="${candidate.photo}" alt="${candidate.name}" class="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-bnp-green pointer-events-none" onerror="this.src='https://placehold.co/100x100/CCCCCC/FFFFFF?text=Photo'">
+                        <p class="font-semibold text-gray-800 pointer-events-none">${candidate.name}</p>
+                    `;
+                    candidatesGrid.appendChild(card);
+                });
+                positionDiv.appendChild(candidatesGrid);
+                positionsContainer.appendChild(positionDiv);
+            });
+        };
+
+        const handleCandidateSelection = (e) => {
+            const card = e.target.closest('.candidate-card');
+            if (!card) return;
+
+            const positionId = card.parentElement.dataset.positionId;
+            const candidateId = card.dataset.candidateId;
+            
+            userSelections[positionId] = candidateId;
+
+            const allCardsInPosition = card.parentElement.querySelectorAll('.candidate-card');
+            allCardsInPosition.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+        };
+        
+        const handleSubmitVote = async () => {
+            voteError.textContent = '';
+            const totalPositions = Object.keys(positions).length;
+            if (Object.keys(userSelections).length !== totalPositions) {
+                voteError.textContent = 'Please select a candidate for every position.';
+                return;
+            }
+            
+            showLoader(true);
+            try {
+                const batch = writeBatch(db);
+                
+                Object.entries(userSelections).forEach(([positionId, candidateId]) => {
+                     const positionRef = doc(db, "positions", positionId);
+                     const voteField = `votes.${candidateId}`;
+                     batch.update(positionRef, { [voteField]: increment(1) });
+                });
+
+                const userRef = doc(db, "users", currentUser.uid);
+                batch.update(userRef, { hasVoted: true });
+
+                await batch.commit();
+
+                currentUser.hasVoted = true;
+                showVotedMessage();
+
+            } catch (error) {
+                console.error("Error submitting vote: ", error);
+                voteError.textContent = "Could not submit vote. Please try again.";
+            } finally {
+                showLoader(false);
+            }
+        };
+
+        // --- RESULTS LOGIC ---
+        const listenToResults = () => {
+            const positionsCollectionRef = collection(db, "positions");
+            resultsUnsubscribe = onSnapshot(positionsCollectionRef, (snapshot) => {
+                const updatedPositions = {};
+                snapshot.forEach(doc => {
+                    updatedPositions[doc.id] = doc.data();
+                });
+                renderResultsPage(updatedPositions);
+            }, (error) => {
+                console.error("Error listening to results:", error);
+                resultsContainer.innerHTML = `<p class="text-red-500">Could not load results. Check permissions.</p>`;
+            });
+        };
+
+        const renderResultsPage = (currentPositions) => {
+            resultsContainer.innerHTML = '';
+            if (Object.keys(currentPositions).length === 0) {
+                 resultsContainer.innerHTML = `<p class="text-center text-gray-500">No election results to display yet.</p>`;
+                return;
+            }
+            Object.values(currentPositions).forEach(position => {
+                const totalVotes = Object.values(position.votes || {}).reduce((sum, v) => sum + v, 0);
+
+                const resultDiv = document.createElement('div');
+                resultDiv.innerHTML = `<h3 class="text-xl font-semibold text-bnp-orange mb-4">${position.title}</h3>`;
+                
+                const candidatesList = document.createElement('div');
+                candidatesList.className = 'space-y-3';
+
+                const sortedCandidates = [...position.candidates].sort((a, b) => {
+                    const votesA = position.votes?.[a.id] || 0;
+                    const votesB = position.votes?.[b.id] || 0;
+                    return votesB - votesA;
+                });
+
+                sortedCandidates.forEach(candidate => {
+                    const votes = position.votes?.[candidate.id] || 0;
+                    const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+                    const item = document.createElement('div');
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-medium text-gray-700">${candidate.name}</span>
+                            <span class="text-sm font-semibold text-bnp-green">${votes} Votes</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="bg-bnp-green h-4 rounded-full text-white text-xs flex items-center justify-center" style="width: ${percentage}%">
+                                <span class="ml-1">${percentage}%</span>
+                            </div>
+                        </div>
+                    `;
+                    candidatesList.appendChild(item);
+                });
+                
+                resultDiv.appendChild(candidatesList);
+                resultsContainer.appendChild(resultDiv);
+            });
+        }
+
+        // --- INITIAL DATA SETUP ---
+        const setupSampleData = async () => {
+            if (!db) {
+                setupFeedback.textContent = "Firebase is not configured.";
+                return;
+            }
+            showLoader(true);
+            setupFeedback.textContent = "Setting up election data...";
+            try {
+                const batch = writeBatch(db);
+                const samplePositions = {
+                    "president": {
+                        title: "President",
+                        candidates: [
+                            { id: "pres1", name: "Alice Johnson", photo: "https://placehold.co/100x100/F37021/FFFFFF?text=AJ" },
+                            { id: "pres2", name: "Bob Williams", photo: "https://placehold.co/100x100/006838/FFFFFF?text=BW" },
+                        ],
+                        votes: { pres1: 0, pres2: 0 }
+                    },
+                    "secretary-general": {
+                        title: "Secretary General",
+                        candidates: [
+                            { id: "sec1", name: "Charlie Brown", photo: "https://placehold.co/100x100/F37021/FFFFFF?text=CB" },
+                            { id: "sec2", name: "Diana Miller", photo: "https://placehold.co/100x100/006838/FFFFFF?text=DM" },
+                        ],
+                        votes: { sec1: 0, sec2: 0 }
+                    }
+                };
+
+                for (const [id, data] of Object.entries(samplePositions)) {
+                    const posRef = doc(db, "positions", id);
+                    batch.set(posRef, data);
+                }
+                await batch.commit();
+
+                setupFeedback.textContent = "Election data has been set up successfully!";
+                await fetchPositions();
+                renderVotingPage();
+
+            } catch (error) {
+                console.error("Data setup failed:", error);
+                setupFeedback.textContent = `Error: ${error.message}`;
+            } finally {
+                showLoader(false);
+            }
+        };
+
+        // --- PWA Service Worker Registration ---
+        const registerServiceWorker = () => {
+            if ('serviceWorker' in navigator) {
+                const swContent = `
+                    const CACHE_NAME = 'bnp-vote-cache-v1';
+                    const urlsToCache = [
+                        '/',
+                        'https://cdn.tailwindcss.com',
+                        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+                        'https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png'
+                    ];
+
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    console.log('Opened cache');
+                                    return cache.addAll(urlsToCache);
+                                })
+                        );
+                    });
+
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => {
+                                    if (response) {
+                                        return response;
+                                    }
+                                    return fetch(event.request);
+                                })
+                        );
+                    });
+                `;
+                const blob = new Blob([swContent], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        googleSigninBtn.addEventListener('click', signInWithGoogle);
+        logoutBtn.addEventListener('click', handleLogout);
+        navBtns.forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+        positionsContainer.addEventListener('click', handleCandidateSelection);
+        submitVoteBtn.addEventListener('click', handleSubmitVote);
+        setupDataBtn.addEventListener('click', setupSampleData);
+
+        // --- START THE APP ---
+        if (auth) {
+            registerServiceWorker();
+        }
+
+    </script>
+</body>
+</html>
