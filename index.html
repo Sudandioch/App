@@ -1,620 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BNP Online Voting</title>
+<meta charset="UTF-8">
+<title>Survey Hub - Pro</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#1b1b1b;color:#fff;min-height:100vh;}
+header{background:linear-gradient(135deg,#b48800,#ffd700);display:flex;justify-content:space-between;align-items:center;padding:15px 25px;position:sticky;top:0;z-index:1000;}
+header h1{color:#1b1b1b;font-size:1.8em;font-weight:bold;}
+nav a{margin-left:15px;color:#1b1b1b;font-weight:600;text-decoration:none;transition:0.3s;}
+nav a:hover{transform:scale(1.1);}
+#adminIcon{position:fixed;top:0;right:0;width:40px;height:40px;opacity:0;cursor:pointer;z-index:1001;}
+.container{max-width:1000px;margin:25px auto;padding:20px;background:#222;border-radius:12px;box-shadow:0 0 15px #ffd700;transition:0.3s;}
+.container:hover{transform:translateY(-2px);}
+.page{display:none;}
+button{padding:10px 16px;background:linear-gradient(135deg,#ffd700,#b48800);color:#1b1b1b;border:none;border-radius:6px;font-weight:700;cursor:pointer;transition:0.3s;}
+button:hover{transform:scale(1.05);background:linear-gradient(135deg,#b48800,#ffd700);}
+input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline:none;}
+.card{border:1px solid #ffd700;padding:16px;margin:15px 0;border-radius:10px;background:rgba(255,215,0,0.08);transition:0.3s;}
+.card:hover{transform:translateY(-5px);box-shadow:0 0 20px #ffd700;}
+.popup{position:fixed;top:20px;right:20px;background:#b48800;color:#1b1b1b;padding:12px;border-radius:6px;display:none;font-weight:bold;animation:popupAnim 0.5s ease-in-out;z-index:1002;}
+@keyframes popupAnim{0%{opacity:0;transform:translateY(-20px);}100%{opacity:1;transform:translateY(0);}}
 
-    <!-- PWA and Mobile App Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BNP Vote">
-    <meta name="application-name" content="BNP Vote">
-    <meta name="theme-color" content="#006838">
-    <link rel="manifest" href="data:application/manifest+json,{
-        &quot;name&quot;: &quot;BNP Online Voting&quot;,
-        &quot;short_name&quot;: &quot;BNP Vote&quot;,
-        &quot;start_url&quot;: &quot;.&quot;,
-        &quot;display&quot;: &quot;standalone&quot;,
-        &quot;background_color&quot;: &quot;#ffffff&quot;,
-        &quot;theme_color&quot;: &quot;#006838&quot;,
-        &quot;description&quot;: &quot;Online voting application for Baringo National Polytechnic.&quot;,
-        &quot;icons&quot;: [
-            {
-                &quot;src&quot;: &quot;https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png&quot;,
-                &quot;sizes&quot;: &quot;192x192&quot;,
-                &quot;type&quot;: &quot;image/png&quot;
-            },
-            {
-                &quot;src&quot;: &quot;https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png&quot;,
-                &quot;sizes&quot;: &quot;512x512&quot;,
-                &quot;type&quot;: &quot;image/png&quot;
-            }
-        ]
-    }">
-    <link rel="apple-touch-icon" href="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png">
+/* Leaderboard Marquee Styles */
+.scroll-leaderboard {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  border: 2px solid #ffd700;
+  padding: 10px;
+  background: #1b1b1b;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.marquee {
+  display: inline-block;
+  animation: scroll 120s linear infinite;
+}
+.marquee-item {
+  display: inline-block;
+  margin-right: 50px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+}
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Color scheme from the BNP logo */
-        :root {
-            --bnp-green: #006838;
-            --bnp-orange: #F37021;
-        }
-        .bg-bnp-green { background-color: var(--bnp-green); }
-        .bg-bnp-orange { background-color: var(--bnp-orange); }
-        .text-bnp-green { color: var(--bnp-green); }
-        .text-bnp-orange { color: var(--bnp-orange); }
-        .border-bnp-green { border-color: var(--bnp-green); }
-        .border-bnp-orange { border-color: var(--bnp-orange); }
-        .ring-bnp-orange:focus { ring-color: var(--bnp-orange); }
-
-        /* Custom styles for a better look and feel */
-        .btn {
-            transition: all 0.3s ease;
-        }
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .candidate-card {
-            transition: all 0.3s ease;
-        }
-        .candidate-card.selected {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 3px var(--bnp-orange);
-            border-color: var(--bnp-orange);
-        }
-        .hidden {
-            display: none;
-        }
-        .loader-container {
-            background-color: white;
-            position: absolute;
-            inset: 0;
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--bnp-green);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+.header-buttons{display:flex;gap:10px;}
+.header-buttons a{text-decoration:none;color:#1b1b1b;font-weight:600; cursor: pointer;}
+.link-note{margin-top:8px;font-size:0.9em;color:#ffd700;}
+.link-note a{color:#ffd700;cursor:pointer;text-decoration:none;}
+#supportTab{position:fixed;right:15px;bottom:30px;background:#0088cc;color:white;padding:12px;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1003;transition:0.3s;}
+#supportTab:hover{transform:scale(1.2);background:#00acee;}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:10px;}
+</style>
 </head>
-<body class="bg-gray-100">
+<body>
 
-    <!-- Main Container -->
-    <div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative">
+<header>
+<h1>Survey Hub</h1>
+<div class="header-buttons" id="headerButtons" style="display:none;">
+<a onclick="showPage('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</a>
+<a onclick="showPage('withdraw')"><i class="fa-solid fa-wallet"></i> Withdraw</a>
+<a onclick="showPage('howItWorks')"><i class="fa-solid fa-info-circle"></i> How It Works</a>
+</div>
+<div id="adminIcon" title="Admin Panel" onclick="showAdminLogin()"></div>
+</header>
 
-        <!-- Loading Overlay -->
-        <div id="loading-overlay" class="loader-container hidden">
-            <div class="loader"></div>
-            <p class="mt-4 text-bnp-green">Loading...</p>
-        </div>
+<a href="https://t.me/Cattherineo" target="_blank" id="supportTab" title="Support">
+  <i class="fa-brands fa-telegram fa-2x"></i>
+</a>
 
-        <!-- Login Page -->
-        <div id="login-page" class="p-8 flex flex-col items-center justify-center min-h-screen">
-            <img src="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png" alt="BNP Logo" class="w-40 h-40 mb-6 mx-auto">
-            <h1 class="text-2xl font-bold text-bnp-green mb-2 text-center">BNP Online Voting</h1>
-            <p class="text-gray-600 mb-8 text-center">Please sign in to continue</p>
-            <button id="google-signin-btn" class="bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg btn flex items-center justify-center w-full max-w-xs">
-                <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google Logo" class="w-6 h-6 mr-4">
-                Sign in with Google
-            </button>
-             <div class="mt-12 text-center w-full">
-                <div id="login-error" class="text-red-600 bg-red-100 border border-red-400 rounded-lg p-4 mt-4 text-sm text-left hidden"></div>
-                <button id="setup-data-btn" class="text-sm text-bnp-orange hover:underline mt-4">Admin: Setup/Reset Election Data</button>
-                <p id="setup-feedback" class="text-bnp-green text-xs mt-2"></p>
-            </div>
-        </div>
+<div class="popup" id="popup"></div>
 
-        <!-- Main App Content (hidden by default) -->
-        <div id="main-app" class="hidden">
-            <!-- App Header -->
-            <header class="bg-bnp-green text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-10">
-                 <div class="flex items-center">
-                    <img src="https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png" alt="BNP Logo" class="w-10 h-10 mr-2">
-                    <h1 class="text-xl font-bold">BNP E-Vote</h1>
-                </div>
-                <div class="text-right">
-                    <p id="user-id-display" class="text-sm font-medium truncate" title="Your User ID"></p>
-                    <button id="logout-btn" class="font-semibold text-xs hover:underline">Logout</button>
-                </div>
-            </header>
+<div class="container page" id="login">
+<h2><i class="fa-solid fa-right-to-bracket"></i> Login</h2>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()"><i class="fa-solid fa-arrow-right"></i> Login</button>
+<p class="link-note">Don't have an account? <a onclick="showPage('signup')">Signup here</a></p>
+</div>
 
-            <!-- Navigation -->
-            <nav class="flex justify-around bg-white p-2 shadow-md sticky top-[72px] z-10">
-                <button data-page="vote-page" class="nav-btn text-bnp-green font-bold py-2 px-4 rounded-lg">Vote</button>
-                <button data-page="results-page" class="nav-btn text-gray-600 font-bold py-2 px-4 rounded-lg">Results</button>
-            </nav>
+<div class="container page" id="signup">
+<h2><i class="fa-solid fa-user-plus"></i> Signup</h2>
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
+<button onclick="signup()"><i class="fa-solid fa-check"></i> Create Account</button>
+<p class="link-note">Already registered? <a onclick="showPage('login')">Login here</a></p>
+</div>
 
-            <!-- Vote Page -->
-            <div id="vote-page" class="page p-6">
-                <div id="voted-message" class="hidden text-center p-6 bg-green-100 text-green-800 rounded-lg">
-                    <h2 class="text-2xl font-bold mb-2">Thank You!</h2>
-                    <p>You have successfully cast your vote.</p>
-                </div>
-                <div id="voting-section">
-                    <h2 class="text-2xl font-bold text-bnp-green mb-6">Cast Your Vote</h2>
-                    <div id="positions-container" class="space-y-8">
-                        <!-- Positions and Candidates will be loaded here -->
-                    </div>
-                    <button id="submit-vote-btn" class="w-full mt-8 bg-bnp-orange text-white font-bold py-3 rounded-lg btn">Submit My Vote</button>
-                    <p id="vote-error" class="text-red-500 text-sm mt-4 text-center h-4"></p>
-                </div>
-            </div>
+<div class="container page" id="dashboard">
+<h3><i class="fa-solid fa-tachometer-alt"></i> Dashboard</h3>
+<p>Welcome, <span id="userDisplay"></span> | Points: <span id="userPoints">0</span></p>
 
-            <!-- Results Page -->
-            <div id="results-page" class="page hidden p-6">
-                <h2 class="text-2xl font-bold text-bnp-green mb-6">Live Election Results</h2>
-                <div id="results-container" class="space-y-8">
-                    <!-- Results will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
+<h4>Starter Package (Free)</h4>
+<div class="card">
+<p>🎁 Free starter surveys for 4 days</p>
+<p>Earn 15 points/day, total 60 points</p>
+<button onclick="takeSurvey('starter')"><i class="fa-solid fa-check"></i> Take Survey</button>
+</div>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, writeBatch, onSnapshot, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<h4>Survey Packages</h4>
+<div class="card" id="standardCard">
+  <h4><i class="fa-solid fa-check-circle"></i> Standard Surveys – Ksh 300</h4>
+  <p>✅ Quick daily surveys to earn points.<br>📈 Perfect for beginners.<br>💡 Easy, low effort tasks.<br>🏆 Max points per package: 92 pts</p>
+  <p id="standardStatus">Activated 0/3</p>
+  <button onclick="subscribe('standard',300)"><i class="fa-solid fa-arrow-right"></i> Activate</button>
+  <button onclick="takeSurvey('standard')"><i class="fa-solid fa-check"></i> Take Survey</button>
+</div>
 
-        // --- User's Firebase Configuration ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyBV9ac_djaRjK83iwB7fxcZkT_zmBeY3pY",
-            authDomain: "bnpapp-6c608.firebaseapp.com",
-            projectId: "bnpapp-6c608",
-            storageBucket: "bnpapp-6c608.appspot.com", // Corrected storage bucket domain
-            messagingSenderId: "764750771159",
-            appId: "1:764750771159:web:0cd4a12272f4185c919192",
-            measurementId: "G-NDNM93N853"
-        };
-        const appId = firebaseConfig.projectId; // Use projectId as the app identifier
+<div class="card" id="premiumCard">
+  <h4><i class="fa-solid fa-gem"></i> Premium Surveys – Ksh 950</h4>
+  <p>💎 High-value surveys for more points.<br>⏱ Moderate frequency but higher return.<br>🔥 Recommended for active users.<br>🏆 Max points per package: 272 pts</p>
+  <p id="premiumStatus">Activated 0/5</p>
+  <button onclick="subscribe('premium',950)"><i class="fa-solid fa-arrow-right"></i> Activate</button>
+  <button onclick="takeSurvey('premium')"><i class="fa-solid fa-check"></i> Take Survey</button>
+</div>
 
-        // --- Initialize Firebase ---
-        let app, auth, db;
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loginPage = document.getElementById('login-page');
-        const mainApp = document.getElementById('main-app');
-        const loginError = document.getElementById('login-error');
+<div class="card" id="bulkCard">
+  <h4><i class="fa-solid fa-box"></i> Bulk Surveys – Ksh 1500</h4>
+  <p>📦 Access multiple surveys in bulk.<br>⚡ Fast-track your points.<br>🏆 Max points per package: 592 pts</p>
+  <p id="bulkStatus">Activated 0/2</p>
+  <button onclick="subscribe('bulk',1500)"><i class="fa-solid fa-arrow-right"></i> Activate</button>
+  <button onclick="takeSurvey('bulk')"><i class="fa-solid fa-check"></i> Take Survey</button>
+</div>
 
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Firebase initialization failed:", e);
-            loginError.textContent = 'Firebase initialization failed.';
-            loginError.classList.remove('hidden');
-            loginPage.classList.remove('hidden');
-            loadingOverlay.classList.add('hidden');
+<h3>Top Users Leaderboard</h3>
+<div class="scroll-leaderboard">
+  <div class="marquee">
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> George Odgard - 1350 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Stacy Awuor - 1280 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Kevin Omari - 1250 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Faith Njeri - 1220 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Otieno - 1190 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Mary Atieno - 1160 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> David Kimani - 1130 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Joy Wambui - 1100 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Kamau - 1070 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Alice Mutua - 1040 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Samuel Kiprop - 1010 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Grace Wanjiku - 980 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Victor Juma - 950 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Sharon Chep - 920 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Emmanuel T. - 890 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Angela Mwikali - 860 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> John Wekesa - 830 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Pamela Chebet - 800 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Michael Odhiambo - 770 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Ruth Nyambura - 740 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Mwangi - 710 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Esther Wanjiru - 680 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> James Karanja - 650 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Florence Akinyi - 620 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Ochieng - 590 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Carol Wangari - 560 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Dennis Kiptoo - 530 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Maryanne Wairimu - 500 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Anthony Mutua - 470 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Violet Chebet - 440 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Martin Mwangi - 410 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Eunice Achieng - 380 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Alex Ouma - 350 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Sarah Njeri - 320 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Kevin Oduor - 290 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Patricia Mwikali - 260 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Charles Onyango - 230 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Elizabeth Wambui - 200 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Ochieng - 180 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Angela Nyambura - 160 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Samuel Kimani - 140 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Joy Wairimu - 120 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Mwangi - 100 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Grace Akinyi - 90 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Dennis Otieno - 80 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Ruth Wanjiku - 70 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Michael Kiprop - 60 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Faith Atieno - 50 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> John Mwangi - 40 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Mary Wambui - 30 pts ✦</span>
+  </div>
+</div>
+</div>
+
+<div class="container page" id="withdraw">
+<h2><i class="fa-solid fa-wallet"></i> Withdraw</h2>
+<p>💰 Your Points: <span id="withdrawPoints">0</span></p>
+<input type="number" id="withdrawMpesaNumber" placeholder="Enter MPESA Number">
+<input type="number" id="withdrawAmount" placeholder="Minimum withdrawal: 100 points">
+<button onclick="simulateWithdraw()"><i class="fa-solid fa-paper-plane"></i> Withdraw</button>
+<h4>Withdrawal History</h4>
+<div id="withdrawHistory"></div>
+</div>
+
+<div class="container page" id="payment">
+<h2><i class="fa-solid fa-money-bill-wave"></i> Manual Payment</h2>
+<p>Pay to: <b>0746572608</b></p>
+<p>Package: <b id="payPackage"></b></p>
+<input id="txnCode" placeholder="Enter MPESA Code">
+<button onclick="submitPayment()"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+</div>
+
+<div class="container page" id="adminSection">
+<h2>Admin Panel</h2>
+<button onclick="showPage('dashboard')">Back to Dashboard</button>
+<div class="admin-grid" id="adminUsers"></div>
+</div>
+
+<div class="container page" id="howItWorks">
+<h2><i class="fa-solid fa-info-circle"></i> How Survey Tasks Look</h2>
+<p>Each survey task is simple, clear, and rewarding:</p>
+<ul>
+<li>📝 Question Type: Multiple-choice, rating, or short answer</li>
+<li>⏳ Time: 1-2 minutes</li>
+<li>🎯 Points: Vary depending on survey type</li>
+<li>💰 Conversion: 10 survey points = 10 Kshs</li>
+<li>💡 Tips: Read carefully to maximize rewards</li>
+<li>🔥 Completion: Immediate points credited</li>
+<li>🌟 Example: "Rate your favorite app features"</li>
+<li>🏆 Maximum Activations per Package:
+  <ul>
+    <li>Standard Surveys – 3 activations</li>
+    <li>Premium Surveys – 5 activations</li>
+    <li>Bulk Surveys – 2 activations</li>
+  </ul>
+</li>
+<li>💰 Earn consistently and climb the leaderboard!</li>
+</ul>
+</div>
+
+<div id="surveyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1005;align-items:center;justify-content:center;">
+  <div style="background:#1b1b1b;color:#fff;padding:25px;border-radius:12px;max-width:500px;width:90%;box-shadow:0 0 20px #ffd700;position:relative;">
+    <h3 id="surveyTitle">Survey</h3>
+    <p id="surveyQuestion">Question goes here</p>
+    <div id="surveyButtons" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+    <button style="margin-top:15px;background:#ffd700;color:#1b1b1b;" onclick="closeSurvey()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const popup = document.getElementById('popup');
+function showPopup(msg) {
+    popup.innerText = msg;
+    popup.style.display = 'block';
+    setTimeout(() => popup.style.display = 'none', 3000);
+}
+
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById(page).style.display = 'block';
+    if (page === 'dashboard') { loadUserData(); updatePackageStatus(); }
+    if (page === 'withdraw') { loadUserData(); loadWithdrawHistory(); }
+}
+
+function normalize(data) {
+    if (!data.packages) data.packages = { starter: 0, standard: 0, premium: 0, bulk: 0 };
+    if (!data.points) data.points = 0;
+    if (!data.withdrawHistory) data.withdrawHistory = [];
+    if (!data.pendingPayment) data.pendingPayment = null;
+    if (!data.lastSurvey) data.lastSurvey = {};
+    return data;
+}
+
+function signup() {
+    const u = document.getElementById('regUser').value.trim();
+    const p = document.getElementById('regPass').value.trim();
+    if (!u || !p) { alert('Fill all fields'); return; }
+    if (localStorage.getItem('user_' + u)) { alert('Username exists'); return; }
+    localStorage.setItem('user_' + u, JSON.stringify({
+        pass: p,
+        packages: { starter: 0, standard: 0, premium: 0, bulk: 0 },
+        points: 0,
+        withdrawHistory: [],
+        pendingPayment: null,
+        lastSurvey: {}
+    }));
+    showPopup('Account created successfully'); showPage('login');
+}
+
+function login() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    if (!u || !p) { alert('Fill fields'); return; }
+    const raw = localStorage.getItem('user_' + u);
+    if (!raw) { alert('Account not found'); return; }
+    const data = JSON.parse(raw);
+    if (data.pass !== p) { alert('Wrong password'); return; }
+    localStorage.setItem('currentUser', u);
+    document.getElementById('headerButtons').style.display = 'flex';
+    showPopup('Login successful');
+    showPage('dashboard');
+}
+
+function loadUserData() {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    const d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    document.getElementById('userDisplay').innerText = u;
+    document.getElementById('userPoints').innerText = d.points;
+    document.getElementById('withdrawPoints').innerText = d.points;
+}
+
+let pendingPackage = null;
+const packageLimits = { starter: 1, standard: 3, premium: 5, bulk: 2 };
+function subscribe(pkg, amt) {
+    pendingPackage = pkg;
+    document.getElementById('payPackage').innerText = pkg.charAt(0).toUpperCase() + pkg.slice(1) + ' Surveys – Ksh ' + amt;
+    showPage('payment');
+}
+
+function submitPayment() {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    if (!d.pendingPayment) d.pendingPayment = [];
+    d.pendingPayment.push(pendingPackage);
+    localStorage.setItem('user_' + u, JSON.stringify(d));
+    showPopup('Payment submitted. Await approval.');
+    showPage('dashboard'); updatePackageStatus();
+}
+
+function updatePackageStatus() {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    const d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    document.getElementById('standardStatus').innerText = `Activated ${d.packages.standard || 0}/${packageLimits.standard}`;
+    document.getElementById('premiumStatus').innerText = `Activated ${d.packages.premium || 0}/${packageLimits.premium}`;
+    document.getElementById('bulkStatus').innerText = `Activated ${d.packages.bulk || 0}/${packageLimits.bulk}`;
+}
+
+function simulateWithdraw() {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    const amt = parseInt(document.getElementById('withdrawAmount').value);
+    const mpesaNum = document.getElementById('withdrawMpesaNumber').value;
+    
+    if (!mpesaNum) { alert('Please enter your MPESA number'); return; }
+    if (!amt || amt < 100) { alert('Minimum withdrawal is 100 points'); return; }
+    if (d.points < amt) { alert('Not enough points'); return; }
+    
+    d.points -= amt;
+    d.withdrawHistory.push({ amount: amt, phone: mpesaNum, time: new Date().toLocaleString() });
+    localStorage.setItem('user_' + u, JSON.stringify(d));
+    showPopup(`Withdrawal successful. Funds will be sent to your MPESA account shortly.`);
+    loadUserData(); loadWithdrawHistory();
+}
+
+function loadWithdrawHistory() {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    const div = document.getElementById('withdrawHistory'); div.innerHTML = '';
+    if (!d.withdrawHistory || d.withdrawHistory.length === 0) { div.innerHTML = '<p>No withdrawals yet.</p>'; return; }
+    d.withdrawHistory.forEach(item => {
+        const p = document.createElement('p');
+        p.innerText = `Amount: ${item.amount} pts | To: ${item.phone} | Date: ${item.time}`;
+        div.appendChild(p);
+    });
+}
+
+function takeSurvey(pkg) {
+    const u = localStorage.getItem('currentUser'); if (!u) return;
+    let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+    if (pkg !== 'starter' && (!d.packages[pkg] || d.packages[pkg] === 0)) {
+        showPopup(`Activate ${pkg.charAt(0).toUpperCase()+pkg.slice(1)} package first.`);
+        return;
+    }
+    const today = new Date().toDateString();
+    if (d.lastSurvey[pkg] === today) {
+        showPopup(`You have already completed today's ${pkg} survey tasks.`);
+        return;
+    }
+    const surveyQuestions = {
+        starter: ["Rate your experience (1-5)","Which feature do you like most?","Would you recommend Survey Hub?"],
+        standard: ["How often do you take surveys?","Do you find surveys rewarding?","Preferred survey type?"],
+        premium: ["Rate survey quality (1-5)","Would you upgrade for more surveys?","Surveys per week?"],
+        bulk: ["Prefer multiple surveys at once?","Daily survey time?","Like bonus points for bulk surveys?"]
+    };
+    currentSurvey = pkg;
+    currentQuestions = surveyQuestions[pkg];
+    currentIndex = 0;
+    showNextSurveyQuestion();
+}
+
+function showNextSurveyQuestion() {
+    if (currentIndex >= currentQuestions.length) {
+        const u = localStorage.getItem('currentUser'); if (!u) return;
+        let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+        const pointsPerPackage = { starter: 15, standard: 30, premium: 50, bulk: 100 };
+        d.points += pointsPerPackage[currentSurvey];
+        d.lastSurvey[currentSurvey] = new Date().toDateString();
+        localStorage.setItem('user_' + u, JSON.stringify(d));
+        loadUserData(); updatePackageStatus();
+        showPopup(`Survey completed! You earned ${pointsPerPackage[currentSurvey]} points.`);
+        closeSurvey();
+        return;
+    }
+    document.getElementById('surveyTitle').innerText = `Survey Task ${currentIndex+1}`;
+    document.getElementById('surveyQuestion').innerText = currentQuestions[currentIndex];
+    const buttonsDiv = document.getElementById('surveyButtons');
+    buttonsDiv.innerHTML = '';
+    for (let i=1;i<=3;i++){
+        const btn = document.createElement('button');
+        btn.innerText = `Answer ${i}`;
+        btn.onclick = ()=>{currentIndex++; showNextSurveyQuestion();};
+        buttonsDiv.appendChild(btn);
+    }
+    surveyModal.style.display = 'flex';
+}
+
+function closeSurvey(){ surveyModal.style.display = 'none'; }
+
+function showAdminLogin() {
+    const uname = prompt("Admin Username:");
+    const pass = prompt("Admin Password:");
+    if (uname === 'admin' && pass === 'password') {
+        showPage('adminSection'); // Correctly point to the admin container
+        loadAdminPanel();
+        showPopup("Admin logged in successfully");
+    } else { alert("Incorrect admin credentials"); }
+}
+
+function loadAdminPanel() {
+    const usersGrid = document.getElementById('adminUsers');
+    usersGrid.innerHTML = '';
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('user_')) {
+            const data = normalize(JSON.parse(localStorage.getItem(key)));
+            const username = key.replace('user_', '');
+            const uCard = document.createElement('div'); uCard.className='card';
+            uCard.innerHTML = `<h4>${username}</h4><p>Password: ${data.pass}</p><p>Points: ${data.points}</p>
+            <button onclick="deleteUser('${username}')">Delete User</button>`;
+            usersGrid.appendChild(uCard);
+            if (data.pendingPayment && data.pendingPayment.length>0){
+                data.pendingPayment.forEach((pkg,index)=>{
+                    const pCard=document.createElement('div');pCard.className='card';
+                    pCard.innerHTML = `<h4>${username}</h4><p>Pending Package: ${pkg}</p>
+                    <button onclick="approvePayment('${username}','${pkg}',${index})">Approve</button>
+                    <button onclick="deletePayment('${username}',${index})">Delete</button>`;
+                    usersGrid.appendChild(pCard);
+                });
+            }
         }
-        
-        // --- DOM Elements ---
-        const googleSigninBtn = document.getElementById('google-signin-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const pages = document.querySelectorAll('.page');
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const positionsContainer = document.getElementById('positions-container');
-        const resultsContainer = document.getElementById('results-container');
-        const votedMessage = document.getElementById('voted-message');
-        const votingSection = document.getElementById('voting-section');
-        const submitVoteBtn = document.getElementById('submit-vote-btn');
-        const voteError = document.getElementById('vote-error');
-        const setupDataBtn = document.getElementById('setup-data-btn');
-        const setupFeedback = document.getElementById('setup-feedback');
-        const userIdDisplay = document.getElementById('user-id-display');
+    }
+}
 
-        let currentUser = null;
-        let positions = {};
-        let userSelections = {};
-        let resultsUnsubscribe = null;
+function approvePayment(username,pkg,index){
+    const data = normalize(JSON.parse(localStorage.getItem('user_'+username)));
+    if (!data.packages[pkg]) data.packages[pkg]=0;
+    if (data.packages[pkg]<packageLimits[pkg]) data.packages[pkg]+=1;
+    data.pendingPayment.splice(index,1);
+    if(data.pendingPayment.length===0)data.pendingPayment=null;
+    localStorage.setItem('user_'+username,JSON.stringify(data));
+    showPopup(`Payment approved for ${username}`);
+    loadAdminPanel(); updatePackageStatus();
+}
 
-        // --- UTILITY FUNCTIONS ---
-        const showLoader = (show) => {
-            loadingOverlay.classList.toggle('hidden', !show);
-        };
+function deletePayment(username,index){
+    const data = normalize(JSON.parse(localStorage.getItem('user_'+username)));
+    data.pendingPayment.splice(index,1);
+    if(data.pendingPayment.length===0)data.pendingPayment=null;
+    localStorage.setItem('user_'+username,JSON.stringify(data));
+    showPopup(`Pending payment deleted`);
+    loadAdminPanel();
+}
 
-        const showPage = (pageId) => {
-            pages.forEach(page => page.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
+function deleteUser(username){
+    if(confirm(`Delete user ${username}?`)){
+        localStorage.removeItem('user_'+username);
+        showPopup(`${username} deleted`);
+        loadAdminPanel();
+    }
+}
 
-            navBtns.forEach(btn => {
-                btn.classList.toggle('text-bnp-green', btn.dataset.page === pageId);
-                btn.classList.toggle('text-gray-600', btn.dataset.page !== pageId);
-            });
-            
-            if (pageId === 'results-page' && !resultsUnsubscribe) {
-                listenToResults();
-            } else if (pageId !== 'results-page' && resultsUnsubscribe) {
-                resultsUnsubscribe();
-                resultsUnsubscribe = null;
-            }
-        };
+showPage('login');
+</script>
 
-        // --- AUTHENTICATION ---
-        const signInWithGoogle = async () => {
-            const provider = new GoogleAuthProvider();
-            showLoader(true);
-            loginError.classList.add('hidden'); // Clear previous errors
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Google Sign-In failed:", error.code, error.message);
-                
-                let errorMessage = `<strong class="text-lg text-red-800 mb-2 flex items-center">
-                                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Sign-In Failed
-                                    </strong>`;
-
-                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/configuration-not-found') {
-                    errorMessage += `<div class="text-left mt-2">
-                            <p class="mb-3">This is a configuration issue in your Firebase project, not a code bug.</p>
-                            <p class="font-bold mb-1">To fix this, follow these steps:</p>
-                            <ol class="list-decimal list-inside space-y-2 text-sm">
-                                <li>
-                                    Click this link to go to your Firebase project settings:<br>
-                                    <a href="https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings" target="_blank" class="text-blue-600 underline font-semibold">Open Firebase Auth Settings</a>
-                                </li>
-                                <li>Under "Authorized domains", click "Add domain".</li>
-                                <li>Copy and paste this exact value:</li>
-                                <div class="my-2 p-2 bg-gray-200 text-black font-mono rounded text-center select-all">${window.location.hostname}</div>
-                                <li>Click "Add", then come back here and <strong class="text-black">refresh the page</strong>.</li>
-                            </ol>
-                        </div>`;
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    errorMessage += `<p class="mt-2">You closed the sign-in window before completing the process. Please try again.</p>`;
-                } else {
-                     errorMessage += `<p class="mt-2">An unexpected error occurred. Please check the console for more details or contact support.</p><p class="text-xs mt-2 font-mono">Error code: ${error.code}</p>`;
-                }
-
-                loginError.innerHTML = errorMessage;
-                loginError.classList.remove('hidden');
-                showLoader(false);
-            }
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            showLoader(true);
-            if (user) {
-                const userDocRef = doc(db, `users`, user.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                if (userDoc.exists()) {
-                    currentUser = { uid: user.uid, ...userDoc.data() };
-                } else {
-                    const newUser = {
-                        uid: user.uid,
-                        displayName: user.displayName,
-                        email: user.email,
-                        hasVoted: false,
-                        createdAt: new Date().toISOString()
-                    };
-                    await setDoc(userDocRef, newUser);
-                    currentUser = newUser;
-                }
-                userIdDisplay.textContent = currentUser.displayName || currentUser.email;
-                await initializeAppState();
-            } else {
-                currentUser = null;
-                showLoginPage();
-            }
-            showLoader(false);
-        });
-
-        const handleLogout = async () => {
-            if (resultsUnsubscribe) resultsUnsubscribe();
-            await signOut(auth);
-            showLoginPage();
-        };
-        
-        const showLoginPage = () => {
-            mainApp.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-            loadingOverlay.classList.add('hidden');
-        };
-
-        // --- APP INITIALIZATION ---
-        const initializeAppState = async () => {
-            loginPage.classList.add('hidden');
-            mainApp.classList.remove('hidden');
-            showPage('vote-page');
-            await fetchPositions();
-            if (currentUser.hasVoted) {
-                showVotedMessage();
-            } else {
-                showVotingSection();
-            }
-        };
-        
-        const showVotedMessage = () => {
-            votingSection.classList.add('hidden');
-            votedMessage.classList.remove('hidden');
-        };
-        
-        const showVotingSection = () => {
-            votedMessage.classList.add('hidden');
-            votingSection.classList.remove('hidden');
-            renderVotingPage();
-        };
-
-        // --- VOTING LOGIC ---
-        const fetchPositions = async () => {
-            positions = {};
-            const positionsCollectionRef = collection(db, "positions");
-            const querySnapshot = await getDocs(positionsCollectionRef);
-            querySnapshot.forEach((doc) => {
-                positions[doc.id] = doc.data();
-            });
-        };
-
-        const renderVotingPage = () => {
-            positionsContainer.innerHTML = '';
-            userSelections = {};
-            if (Object.keys(positions).length === 0) {
-                positionsContainer.innerHTML = `<p class="text-center text-gray-500">The election has not been set up yet. Please check back later.</p>`;
-                submitVoteBtn.classList.add('hidden');
-                return;
-            }
-            submitVoteBtn.classList.remove('hidden');
-            Object.entries(positions).forEach(([id, position]) => {
-                const positionDiv = document.createElement('div');
-                positionDiv.innerHTML = `<h3 class="text-xl font-semibold text-bnp-orange mb-4">${position.title}</h3>`;
-                
-                const candidatesGrid = document.createElement('div');
-                candidatesGrid.className = 'grid grid-cols-2 gap-4';
-                candidatesGrid.dataset.positionId = id;
-
-                position.candidates.forEach(candidate => {
-                    const card = document.createElement('div');
-                    card.className = 'candidate-card border border-gray-200 rounded-lg p-3 text-center cursor-pointer';
-                    card.dataset.candidateId = candidate.id;
-                    card.innerHTML = `
-                        <img src="${candidate.photo}" alt="${candidate.name}" class="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-bnp-green pointer-events-none" onerror="this.src='https://placehold.co/100x100/CCCCCC/FFFFFF?text=Photo'">
-                        <p class="font-semibold text-gray-800 pointer-events-none">${candidate.name}</p>
-                    `;
-                    candidatesGrid.appendChild(card);
-                });
-                positionDiv.appendChild(candidatesGrid);
-                positionsContainer.appendChild(positionDiv);
-            });
-        };
-
-        const handleCandidateSelection = (e) => {
-            const card = e.target.closest('.candidate-card');
-            if (!card) return;
-
-            const positionId = card.parentElement.dataset.positionId;
-            const candidateId = card.dataset.candidateId;
-            
-            userSelections[positionId] = candidateId;
-
-            const allCardsInPosition = card.parentElement.querySelectorAll('.candidate-card');
-            allCardsInPosition.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-        };
-        
-        const handleSubmitVote = async () => {
-            voteError.textContent = '';
-            const totalPositions = Object.keys(positions).length;
-            if (Object.keys(userSelections).length !== totalPositions) {
-                voteError.textContent = 'Please select a candidate for every position.';
-                return;
-            }
-            
-            showLoader(true);
-            try {
-                const batch = writeBatch(db);
-                
-                Object.entries(userSelections).forEach(([positionId, candidateId]) => {
-                     const positionRef = doc(db, "positions", positionId);
-                     const voteField = `votes.${candidateId}`;
-                     batch.update(positionRef, { [voteField]: increment(1) });
-                });
-
-                const userRef = doc(db, "users", currentUser.uid);
-                batch.update(userRef, { hasVoted: true });
-
-                await batch.commit();
-
-                currentUser.hasVoted = true;
-                showVotedMessage();
-
-            } catch (error) {
-                console.error("Error submitting vote: ", error);
-                voteError.textContent = "Could not submit vote. Please try again.";
-            } finally {
-                showLoader(false);
-            }
-        };
-
-        // --- RESULTS LOGIC ---
-        const listenToResults = () => {
-            const positionsCollectionRef = collection(db, "positions");
-            resultsUnsubscribe = onSnapshot(positionsCollectionRef, (snapshot) => {
-                const updatedPositions = {};
-                snapshot.forEach(doc => {
-                    updatedPositions[doc.id] = doc.data();
-                });
-                renderResultsPage(updatedPositions);
-            }, (error) => {
-                console.error("Error listening to results:", error);
-                resultsContainer.innerHTML = `<p class="text-red-500">Could not load results. Check permissions.</p>`;
-            });
-        };
-
-        const renderResultsPage = (currentPositions) => {
-            resultsContainer.innerHTML = '';
-            if (Object.keys(currentPositions).length === 0) {
-                 resultsContainer.innerHTML = `<p class="text-center text-gray-500">No election results to display yet.</p>`;
-                return;
-            }
-            Object.values(currentPositions).forEach(position => {
-                const totalVotes = Object.values(position.votes || {}).reduce((sum, v) => sum + v, 0);
-
-                const resultDiv = document.createElement('div');
-                resultDiv.innerHTML = `<h3 class="text-xl font-semibold text-bnp-orange mb-4">${position.title}</h3>`;
-                
-                const candidatesList = document.createElement('div');
-                candidatesList.className = 'space-y-3';
-
-                const sortedCandidates = [...position.candidates].sort((a, b) => {
-                    const votesA = position.votes?.[a.id] || 0;
-                    const votesB = position.votes?.[b.id] || 0;
-                    return votesB - votesA;
-                });
-
-                sortedCandidates.forEach(candidate => {
-                    const votes = position.votes?.[candidate.id] || 0;
-                    const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
-                    const item = document.createElement('div');
-                    item.innerHTML = `
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-medium text-gray-700">${candidate.name}</span>
-                            <span class="text-sm font-semibold text-bnp-green">${votes} Votes</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-4">
-                            <div class="bg-bnp-green h-4 rounded-full text-white text-xs flex items-center justify-center" style="width: ${percentage}%">
-                                <span class="ml-1">${percentage}%</span>
-                            </div>
-                        </div>
-                    `;
-                    candidatesList.appendChild(item);
-                });
-                
-                resultDiv.appendChild(candidatesList);
-                resultsContainer.appendChild(resultDiv);
-            });
-        }
-
-        // --- INITIAL DATA SETUP ---
-        const setupSampleData = async () => {
-            if (!db) {
-                setupFeedback.textContent = "Firebase is not configured.";
-                return;
-            }
-            showLoader(true);
-            setupFeedback.textContent = "Setting up election data...";
-            try {
-                const batch = writeBatch(db);
-                const samplePositions = {
-                    "president": {
-                        title: "President",
-                        candidates: [
-                            { id: "pres1", name: "Alice Johnson", photo: "https://placehold.co/100x100/F37021/FFFFFF?text=AJ" },
-                            { id: "pres2", name: "Bob Williams", photo: "https://placehold.co/100x100/006838/FFFFFF?text=BW" },
-                        ],
-                        votes: { pres1: 0, pres2: 0 }
-                    },
-                    "secretary-general": {
-                        title: "Secretary General",
-                        candidates: [
-                            { id: "sec1", name: "Charlie Brown", photo: "https://placehold.co/100x100/F37021/FFFFFF?text=CB" },
-                            { id: "sec2", name: "Diana Miller", photo: "https://placehold.co/100x100/006838/FFFFFF?text=DM" },
-                        ],
-                        votes: { sec1: 0, sec2: 0 }
-                    }
-                };
-
-                for (const [id, data] of Object.entries(samplePositions)) {
-                    const posRef = doc(db, "positions", id);
-                    batch.set(posRef, data);
-                }
-                await batch.commit();
-
-                setupFeedback.textContent = "Election data has been set up successfully!";
-                await fetchPositions();
-                renderVotingPage();
-
-            } catch (error) {
-                console.error("Data setup failed:", error);
-                setupFeedback.textContent = `Error: ${error.message}`;
-            } finally {
-                showLoader(false);
-            }
-        };
-
-        // --- PWA Service Worker Registration ---
-        const registerServiceWorker = () => {
-            if ('serviceWorker' in navigator) {
-                const swContent = `
-                    const CACHE_NAME = 'bnp-vote-cache-v1';
-                    const urlsToCache = [
-                        '/',
-                        'https://cdn.tailwindcss.com',
-                        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-                        'https://storage.googleapis.com/gemini-prod-us-west1-4554/uploaded/download.png'
-                    ];
-
-                    self.addEventListener('install', event => {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    console.log('Opened cache');
-                                    return cache.addAll(urlsToCache);
-                                })
-                        );
-                    });
-
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then(response => {
-                                    if (response) {
-                                        return response;
-                                    }
-                                    return fetch(event.request);
-                                })
-                        );
-                    });
-                `;
-                const blob = new Blob([swContent], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed: ', error);
-                    });
-            }
-        };
-
-        // --- EVENT LISTENERS ---
-        googleSigninBtn.addEventListener('click', signInWithGoogle);
-        logoutBtn.addEventListener('click', handleLogout);
-        navBtns.forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
-        positionsContainer.addEventListener('click', handleCandidateSelection);
-        submitVoteBtn.addEventListener('click', handleSubmitVote);
-        setupDataBtn.addEventListener('click', setupSampleData);
-
-        // --- START THE APP ---
-        if (auth) {
-            registerServiceWorker();
-        }
-
-    </script>
 </body>
 </html>
