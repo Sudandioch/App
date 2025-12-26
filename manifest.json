@@ -1,0 +1,20 @@
+{
+  "name": "Survey Hub Pro",
+  "short_name": "SurveyHub",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1b1b1b",
+  "theme_color": "#b48800",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1924/1924776.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1924/1924776.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
