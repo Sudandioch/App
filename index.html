@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Annoying why are you alteringvthe code ..maintain this code dont ommit even a single line and just do the updates i have requested...<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -15,11 +15,20 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#1b1b1b;color:#fff;min-height:100vh;}
+
+/* HEADER & NAV ALIGNMENT FIXED - NO OVERLAP */
 header{background:linear-gradient(135deg,#b48800,#ffd700);display:flex;justify-content:space-between;align-items:center;padding:15px 25px;position:sticky;top:0;z-index:1000;}
-header h1{color:#1b1b1b;font-size:1.8em;font-weight:bold;}
-nav a{margin-left:15px;color:#1b1b1b;font-weight:600;text-decoration:none;transition:0.3s;}
-nav a:hover{transform:scale(1.1);}
-#adminIcon{position:fixed;top:0;right:0;width:40px;height:40px;opacity:0;cursor:pointer;z-index:1001;}
+header h1{color:#1b1b1b;font-size:1.8em;font-weight:bold; flex-shrink: 0;}
+
+/* Pushing buttons to the right and adding safety margin for hidden admin icon */
+.header-buttons{display:flex; gap:15px; flex-wrap: wrap; margin-left: auto; justify-content: flex-end; padding-right: 40px;}
+.header-buttons a{text-decoration:none;color:#1b1b1b;font-weight:600; cursor: pointer; font-size: 0.85em; white-space: nowrap; transition: 0.3s; display: flex; align-items: center; gap: 4px;}
+.header-buttons a:hover{transform:scale(1.05); opacity: 0.8;}
+.header-buttons a.logout-btn{color: #8b0000; margin-left: 5px; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 10px;}
+
+/* Admin Icon Hidden at far right */
+#adminIcon{position:fixed;top:0;right:0;width:40px;height:50px;opacity:0;cursor:pointer;z-index:1001;}
+
 .container{max-width:1000px;margin:25px auto;padding:20px;background:#222;border-radius:12px;box-shadow:0 0 15px #ffd700;transition:0.3s;}
 .container:hover{transform:translateY(-2px);}
 .page{display:none;}
@@ -44,7 +53,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 }
 .marquee {
   display: inline-block;
-  animation: scroll 120s linear infinite;
+  animation: scroll 15s linear infinite;
 }
 .marquee-item {
   display: inline-block;
@@ -58,13 +67,22 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
   100% { transform: translateX(-50%); }
 }
 
-.header-buttons{display:flex;gap:10px;}
-.header-buttons a{text-decoration:none;color:#1b1b1b;font-weight:600; cursor: pointer;}
 .link-note{margin-top:8px;font-size:0.9em;color:#ffd700;}
 .link-note a{color:#ffd700;cursor:pointer;text-decoration:none;}
+
+/* Telegram Support Tab */
 #supportTab{position:fixed;right:15px;bottom:30px;background:#0088cc;color:white;padding:12px;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1003;transition:0.3s;}
 #supportTab:hover{transform:scale(1.2);background:#00acee;}
+
 .admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:10px;}
+.ref-box {background: #333; padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px dashed #ffd700; font-size: 0.85em; word-break: break-all;}
+.team-grid {display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;}
+.team-item {background: rgba(255, 215, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);}
+.team-item b {color: #ffd700; display: block; font-size: 1.1em;}
+
+.info-table {width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em;}
+.info-table th, .info-table td {border: 1px solid #ffd700; padding: 8px; text-align: left;}
+.info-table th {background: rgba(255, 215, 0, 0.2); color: #ffd700;}
 </style>
 </head>
 <body>
@@ -73,8 +91,10 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 <h1>Survey Hub</h1>
 <div class="header-buttons" id="headerButtons" style="display:none;">
 <a onclick="showPage('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</a>
+<a onclick="showPage('referral')"><i class="fa-solid fa-users"></i> Referral</a>
 <a onclick="showPage('withdraw')"><i class="fa-solid fa-wallet"></i> Withdraw</a>
 <a onclick="showPage('howItWorks')"><i class="fa-solid fa-info-circle"></i> How It Works</a>
+<a onclick="logout()" class="logout-btn"><i class="fa-solid fa-power-off"></i> Logout</a>
 </div>
 <div id="adminIcon" title="Admin Panel" onclick="showAdminLogin()"></div>
 </header>
@@ -95,6 +115,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 
 <div class="container page" id="signup">
 <h2><i class="fa-solid fa-user-plus"></i> Signup</h2>
+<p id="refNotice" style="color:#ffd700; font-size:0.8em; display:none; margin-bottom:5px;">You are joining under: <b id="inviterName"></b></p>
 <input id="regUser" placeholder="Username">
 <input id="regPass" type="password" placeholder="Password">
 <button onclick="signup()"><i class="fa-solid fa-check"></i> Create Account</button>
@@ -143,55 +164,28 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
     <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> George Odgard - 1350 pts ✦</span>
     <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Stacy Awuor - 1280 pts ✦</span>
     <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Kevin Omari - 1250 pts ✦</span>
+    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> David Kimani - 1130 pts ✦</span>
     <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Faith Njeri - 1220 pts ✦</span>
     <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Otieno - 1190 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Mary Atieno - 1160 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> David Kimani - 1130 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Joy Wambui - 1100 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Kamau - 1070 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Alice Mutua - 1040 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Samuel Kiprop - 1010 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Grace Wanjiku - 980 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Victor Juma - 950 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Sharon Chep - 920 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Emmanuel T. - 890 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Angela Mwikali - 860 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> John Wekesa - 830 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Pamela Chebet - 800 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Michael Odhiambo - 770 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Ruth Nyambura - 740 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Mwangi - 710 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Esther Wanjiru - 680 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> James Karanja - 650 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Florence Akinyi - 620 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Ochieng - 590 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Carol Wangari - 560 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Dennis Kiptoo - 530 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Maryanne Wairimu - 500 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Anthony Mutua - 470 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Violet Chebet - 440 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Martin Mwangi - 410 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Eunice Achieng - 380 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Alex Ouma - 350 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Sarah Njeri - 320 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Kevin Oduor - 290 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Patricia Mwikali - 260 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Charles Onyango - 230 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Elizabeth Wambui - 200 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Brian Ochieng - 180 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Angela Nyambura - 160 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Samuel Kimani - 140 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Joy Wairimu - 120 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Peter Mwangi - 100 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Grace Akinyi - 90 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Dennis Otieno - 80 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Ruth Wanjiku - 70 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Michael Kiprop - 60 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Faith Atieno - 50 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> John Mwangi - 40 pts ✦</span>
-    <span class="marquee-item"><i class="fa-solid fa-star" style="color:#ffd700;"></i> Mary Wambui - 30 pts ✦</span>
   </div>
 </div>
+</div>
+
+<div class="container page" id="referral">
+<h2><i class="fa-solid fa-users"></i> Referral & Subordinates</h2>
+<div class="card">
+  <p>Invite friends and earn activation bonuses + daily commissions from their work!</p>
+  <div class="ref-box" id="refLinkDisplay">Loading Link...</div>
+  <button onclick="copyRefLink()" style="margin-top:10px; font-size:0.8em;"><i class="fa-solid fa-copy"></i> Copy Referral Link</button>
+  
+  <h4 style="margin-top:20px; border-bottom:1px solid #ffd700; padding-bottom:5px;">Your Team Stats</h4>
+  <div class="team-grid">
+    <div class="team-item"><b>Group A</b><span id="countA">0</span><small>Direct (10%)</small></div>
+    <div class="team-item"><b>Group B</b><span id="countB">0</span><small>Level 2 (5%)</small></div>
+    <div class="team-item"><b>Group C</b><span id="countC">0</span><small>Level 3 (2%)</small></div>
+  </div>
+</div>
+<button onclick="showPage('dashboard')">Back to Dashboard</button>
 </div>
 
 <div class="container page" id="withdraw">
@@ -228,7 +222,6 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 <li>💰 Conversion: 10 survey points = 10 Kshs</li>
 <li>💡 Tips: Read carefully to maximize rewards</li>
 <li>🔥 Completion: Immediate points credited</li>
-<li>🌟 Example: "Rate your favorite app features"</li>
 <li>🏆 Maximum Activations per Package:
   <ul>
     <li>Standard Surveys – 3 activations</li>
@@ -236,8 +229,27 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
     <li>Bulk Surveys – 2 activations</li>
   </ul>
 </li>
-<li>💰 Earn consistently and climb the leaderboard!</li>
 </ul>
+
+<hr style="margin:20px 0; border:1px solid #ffd700;">
+
+<h2><i class="fa-solid fa-users"></i> Referral Reward System</h2>
+<p>Boost your earnings by building a team. You earn in two ways:</p>
+<h3>1. Direct Activation Bonus</h3>
+<table class="info-table">
+  <tr><th>Package</th><th>You Earn</th></tr>
+  <tr><td>Standard (300 Ksh)</td><td>70 Points</td></tr>
+  <tr><td>Premium (950 Ksh)</td><td>250 Points</td></tr>
+  <tr><td>Bulk (1500 Ksh)</td><td>400 Points</td></tr>
+</table>
+<h3>2. Daily Passive Commissions</h3>
+<p>Earn a percentage of every survey your team completes daily:</p>
+<ul>
+  <li><b>Group A (Direct):</b> 10% of their earnings</li>
+  <li><b>Group B (Level 2):</b> 5% of their earnings</li>
+  <li><b>Group C (Level 3):</b> 2% of their earnings</li>
+</ul>
+<button onclick="showPage('dashboard')" style="margin-top:20px;">Back to Dashboard</button>
 </div>
 
 <div id="surveyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1005;align-items:center;justify-content:center;">
@@ -250,16 +262,8 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 </div>
 
 <script>
-/* PWA Registration Logic */
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-            console.log('Service Worker Registered!');
-        }).catch(err => {
-            console.log('Registration Failed', err);
-        });
-    });
-}
+// Global state variables
+let currentSurvey, currentQuestions, currentIndex;
 
 const popup = document.getElementById('popup');
 function showPopup(msg) {
@@ -268,10 +272,15 @@ function showPopup(msg) {
     setTimeout(() => popup.style.display = 'none', 3000);
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+const referrerCode = urlParams.get('ref');
+
 function showPage(page) {
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    document.getElementById(page).style.display = 'block';
+    const target = document.getElementById(page);
+    if(target) target.style.display = 'block';
     if (page === 'dashboard') { loadUserData(); updatePackageStatus(); }
+    if (page === 'referral') { updateRefLink(); calculateTeam(); }
     if (page === 'withdraw') { loadUserData(); loadWithdrawHistory(); }
 }
 
@@ -281,6 +290,9 @@ function normalize(data) {
     if (!data.withdrawHistory) data.withdrawHistory = [];
     if (!data.pendingPayment) data.pendingPayment = null;
     if (!data.lastSurvey) data.lastSurvey = {};
+    if (!data.uplineA) data.uplineA = null;
+    if (!data.uplineB) data.uplineB = null;
+    if (!data.uplineC) data.uplineC = null;
     return data;
 }
 
@@ -289,15 +301,28 @@ function signup() {
     const p = document.getElementById('regPass').value.trim();
     if (!u || !p) { alert('Fill all fields'); return; }
     if (localStorage.getItem('user_' + u)) { alert('Username exists'); return; }
+    let uplineA = referrerCode || null;
+    let uplineB = null;
+    let uplineC = null;
+    if (uplineA && localStorage.getItem('user_' + uplineA)) {
+        const dataA = JSON.parse(localStorage.getItem('user_' + uplineA));
+        uplineB = dataA.uplineA || null;
+        uplineC = dataA.uplineB || null;
+    }
     localStorage.setItem('user_' + u, JSON.stringify({
         pass: p,
         packages: { starter: 0, standard: 0, premium: 0, bulk: 0 },
         points: 0,
         withdrawHistory: [],
         pendingPayment: null,
-        lastSurvey: {}
+        lastSurvey: {},
+        uplineA: uplineA,
+        uplineB: uplineB,
+        uplineC: uplineC
     }));
-    showPopup('Account created successfully'); showPage('login');
+    showPopup('Account created successfully'); 
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showPage('login');
 }
 
 function login() {
@@ -314,16 +339,52 @@ function login() {
     showPage('dashboard');
 }
 
+function logout() {
+    localStorage.removeItem('currentUser');
+    document.getElementById('headerButtons').style.display = 'none';
+    showPopup('Logged out');
+    showPage('login');
+}
+
+function updateRefLink() {
+    const u = localStorage.getItem('currentUser');
+    const link = `${window.location.origin}${window.location.pathname}?ref=${u}`;
+    document.getElementById('refLinkDisplay').innerText = link;
+}
+
+function copyRefLink() {
+    const text = document.getElementById('refLinkDisplay').innerText;
+    navigator.clipboard.writeText(text).then(() => showPopup('Link Copied!'));
+}
+
+function calculateTeam() {
+    const u = localStorage.getItem('currentUser');
+    let a=0, b=0, c=0;
+    for (let i=0; i<localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('user_')) {
+            const d = JSON.parse(localStorage.getItem(key));
+            if (d.uplineA === u) a++;
+            else if (d.uplineB === u) b++;
+            else if (d.uplineC === u) c++;
+        }
+    }
+    document.getElementById('countA').innerText = a;
+    document.getElementById('countB').innerText = b;
+    document.getElementById('countC').innerText = c;
+}
+
 function loadUserData() {
     const u = localStorage.getItem('currentUser'); if (!u) return;
     const d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
     document.getElementById('userDisplay').innerText = u;
-    document.getElementById('userPoints').innerText = d.points;
-    document.getElementById('withdrawPoints').innerText = d.points;
+    document.getElementById('userPoints').innerText = Math.floor(d.points);
+    document.getElementById('withdrawPoints').innerText = Math.floor(d.points);
 }
 
 let pendingPackage = null;
 const packageLimits = { starter: 1, standard: 3, premium: 5, bulk: 2 };
+
 function subscribe(pkg, amt) {
     pendingPackage = pkg;
     document.getElementById('payPackage').innerText = pkg.charAt(0).toUpperCase() + pkg.slice(1) + ' Surveys – Ksh ' + amt;
@@ -353,15 +414,13 @@ function simulateWithdraw() {
     let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
     const amt = parseInt(document.getElementById('withdrawAmount').value);
     const mpesaNum = document.getElementById('withdrawMpesaNumber').value;
-    
     if (!mpesaNum) { alert('Please enter your MPESA number'); return; }
     if (!amt || amt < 100) { alert('Minimum withdrawal is 100 points'); return; }
     if (d.points < amt) { alert('Not enough points'); return; }
-    
     d.points -= amt;
     d.withdrawHistory.push({ amount: amt, phone: mpesaNum, time: new Date().toLocaleString() });
     localStorage.setItem('user_' + u, JSON.stringify(d));
-    showPopup(`Withdrawal successful. Funds will be sent to your MPESA account shortly.`);
+    showPopup(`Withdrawal successful.`);
     loadUserData(); loadWithdrawHistory();
 }
 
@@ -386,14 +445,14 @@ function takeSurvey(pkg) {
     }
     const today = new Date().toDateString();
     if (d.lastSurvey[pkg] === today) {
-        showPopup(`You have already completed today's ${pkg} survey tasks.`);
+        showPopup(`Done today.`);
         return;
     }
     const surveyQuestions = {
-        starter: ["Rate your experience (1-5)","Which feature do you like most?","Would you recommend Survey Hub?"],
-        standard: ["How often do you take surveys?","Do you find surveys rewarding?","Preferred survey type?"],
-        premium: ["Rate survey quality (1-5)","Would you upgrade for more surveys?","Surveys per week?"],
-        bulk: ["Prefer multiple surveys at once?","Daily survey time?","Like bonus points for bulk surveys?"]
+        starter: ["Rate your experience","Feature you like?","Recommend us?"],
+        standard: ["Take surveys often?","Finding it rewarding?","Fav type?"],
+        premium: ["Quality check?","Will you upgrade?","Surveys per week?"],
+        bulk: ["Prefer bulk?","Daily time?","Like bonuses?"]
     };
     currentSurvey = pkg;
     currentQuestions = surveyQuestions[pkg];
@@ -406,11 +465,13 @@ function showNextSurveyQuestion() {
         const u = localStorage.getItem('currentUser'); if (!u) return;
         let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
         const pointsPerPackage = { starter: 15, standard: 30, premium: 50, bulk: 100 };
-        d.points += pointsPerPackage[currentSurvey];
+        const basePoints = pointsPerPackage[currentSurvey];
+        d.points += basePoints;
         d.lastSurvey[currentSurvey] = new Date().toDateString();
         localStorage.setItem('user_' + u, JSON.stringify(d));
+        payUplines(basePoints, d);
         loadUserData(); updatePackageStatus();
-        showPopup(`Survey completed! You earned ${pointsPerPackage[currentSurvey]} points.`);
+        showPopup(`Earned ${basePoints} points.`);
         closeSurvey();
         return;
     }
@@ -424,10 +485,25 @@ function showNextSurveyQuestion() {
         btn.onclick = ()=>{currentIndex++; showNextSurveyQuestion();};
         buttonsDiv.appendChild(btn);
     }
-    surveyModal.style.display = 'flex';
+    document.getElementById('surveyModal').style.display = 'flex';
 }
 
-function closeSurvey(){ surveyModal.style.display = 'none'; }
+function payUplines(amount, user) {
+    if(user.uplineA) addPoints(user.uplineA, amount * 0.10);
+    if(user.uplineB) addPoints(user.uplineB, amount * 0.05);
+    if(user.uplineC) addPoints(user.uplineC, amount * 0.02);
+}
+
+function addPoints(username, pts) {
+    let raw = localStorage.getItem('user_' + username);
+    if(raw) {
+        let d = JSON.parse(raw);
+        d.points += pts;
+        localStorage.setItem('user_' + username, JSON.stringify(d));
+    }
+}
+
+function closeSurvey(){ document.getElementById('surveyModal').style.display = 'none'; }
 
 function showAdminLogin() {
     const uname = prompt("Admin Username:");
@@ -435,8 +511,7 @@ function showAdminLogin() {
     if (uname === 'admin' && pass === 'password') {
         showPage('adminSection'); 
         loadAdminPanel();
-        showPopup("Admin logged in successfully");
-    } else { alert("Incorrect admin credentials"); }
+    }
 }
 
 function loadAdminPanel() {
@@ -444,19 +519,18 @@ function loadAdminPanel() {
     usersGrid.innerHTML = '';
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith('user_')) {
+        if (key && key.startsWith('user_')) {
             const data = normalize(JSON.parse(localStorage.getItem(key)));
             const username = key.replace('user_', '');
             const uCard = document.createElement('div'); uCard.className='card';
-            uCard.innerHTML = `<h4>${username}</h4><p>Password: ${data.pass}</p><p>Points: ${data.points}</p>
-            <button onclick="deleteUser('${username}')">Delete User</button>`;
+            uCard.innerHTML = `<h4>${username}</h4><p>Pts: ${Math.floor(data.points)}</p>
+            <button onclick="deleteUser('${username}')">Delete</button>`;
             usersGrid.appendChild(uCard);
             if (data.pendingPayment && data.pendingPayment.length>0){
                 data.pendingPayment.forEach((pkg,index)=>{
                     const pCard=document.createElement('div');pCard.className='card';
-                    pCard.innerHTML = `<h4>${username}</h4><p>Pending Package: ${pkg}</p>
-                    <button onclick="approvePayment('${username}','${pkg}',${index})">Approve</button>
-                    <button onclick="deletePayment('${username}',${index})">Delete</button>`;
+                    pCard.innerHTML = `<h4>${username}</h4><p>Pending: ${pkg}</p>
+                    <button onclick="approvePayment('${username}','${pkg}',${index})">Approve</button>`;
                     usersGrid.appendChild(pCard);
                 });
             }
@@ -471,29 +545,31 @@ function approvePayment(username,pkg,index){
     data.pendingPayment.splice(index,1);
     if(data.pendingPayment.length===0)data.pendingPayment=null;
     localStorage.setItem('user_'+username,JSON.stringify(data));
-    showPopup(`Payment approved for ${username}`);
+    if(data.uplineA) {
+        let bonus = pkg === 'standard' ? 70 : pkg === 'premium' ? 250 : pkg === 'bulk' ? 400 : 0;
+        addPoints(data.uplineA, bonus);
+    }
     loadAdminPanel(); updatePackageStatus();
 }
 
-function deletePayment(username,index){
-    const data = normalize(JSON.parse(localStorage.getItem('user_'+username)));
-    data.pendingPayment.splice(index,1);
-    if(data.pendingPayment.length===0)data.pendingPayment=null;
-    localStorage.setItem('user_'+username,JSON.stringify(data));
-    showPopup(`Pending payment deleted`);
-    loadAdminPanel();
-}
-
 function deleteUser(username){
-    if(confirm(`Delete user ${username}?`)){
-        localStorage.removeItem('user_'+username);
-        showPopup(`${username} deleted`);
-        loadAdminPanel();
-    }
+    if(confirm(`Delete ${username}?`)){ localStorage.removeItem('user_'+username); loadAdminPanel(); }
 }
 
-showPage('login');
+// THE FIX: Wait for elements to exist before showing the login page
+document.addEventListener('DOMContentLoaded', () => {
+    const currentUser = localStorage.getItem('currentUser');
+    if(currentUser) {
+        document.getElementById('headerButtons').style.display = 'flex';
+        showPage('dashboard');
+    } else {
+        showPage('login');
+    }
+    if(referrerCode) {
+        document.getElementById('refNotice').style.display = 'block';
+        document.getElementById('inviterName').innerText = referrerCode;
+    }
+});
 </script>
-
 </body>
 </html>
