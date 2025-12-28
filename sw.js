@@ -1,22 +1,36 @@
-const cacheName = 'survey-hub-v1';
-const assets = [
+const CACHE_NAME = 'survey-hub-v1';
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(cacheName).then(cache => {
-      return cache.addAll(assets);
+// Install Event
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
+// Activate Event
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+});
+
+// Fetch Event
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
     })
   );
 });
