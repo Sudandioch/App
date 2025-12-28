@@ -2,20 +2,22 @@
   "name": "Survey Hub - Pro",
   "short_name": "SurveyHub",
   "description": "Premium Survey Platform",
-  "start_url": "index.html",
+  "start_url": "https://sudandioch.github.io/App/index.html",
   "display": "standalone",
   "background_color": "#1b1b1b",
   "theme_color": "#b48800",
   "icons": [
     {
-      "src": "Icon.png",
+      "src": "https://sudandioch.github.io/App/Icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "Icon.png",
+      "src": "https://sudandioch.github.io/App/Icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
