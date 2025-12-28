@@ -83,6 +83,29 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 .info-table {width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em;}
 .info-table th, .info-table td {border: 1px solid #ffd700; padding: 8px; text-align: left;}
 .info-table th {background: rgba(255, 215, 0, 0.2); color: #ffd700;}
+
+/* Install Button Styling */
+#installContainer {
+    display: none;
+    text-align: center;
+    margin: 20px 0;
+}
+#btnInstall {
+    background: linear-gradient(135deg, #b48800, #ffd700);
+    color: #1b1b1b;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
 </style>
 </head>
 <body>
@@ -126,6 +149,13 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 
 <div class="container page" id="dashboard">
 <h3><i class="fa-solid fa-tachometer-alt"></i> Dashboard</h3>
+
+<div id="installContainer">
+    <button id="btnInstall">
+        <i class="fas fa-download"></i> INSTALL OFFICIAL APP
+    </button>
+</div>
+
 <p>Welcome, <span id="userDisplay"></span> | Points: <span id="userPoints">0</span></p>
 
 <h4>Starter Package (Free)</h4>
@@ -268,6 +298,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 
 <script>
 let currentSurvey, currentQuestions, currentIndex;
+let deferredPrompt; // For Custom Install
 
 const popup = document.getElementById('popup');
 function showPopup(msg) {
@@ -355,11 +386,11 @@ function logout() {
     showPage('login');
 }
 
+// FIXED: Hardcoded Professional Domain for Referral
 function updateRefLink() {
     const u = localStorage.getItem('currentUser');
-    // FIXED: Uses origin + pathname to ensure it works on GitHub Pages subfolders
-    const baseUrl = window.location.origin + window.location.pathname;
-    const link = `${baseUrl}?ref=${u}`;
+    const professionalDomain = "https://surveyhub.great-site.net";
+    const link = `${professionalDomain}/?ref=${u}`;
     document.getElementById('refLinkDisplay').innerText = link;
 }
 
@@ -539,7 +570,6 @@ function closeSurvey(){ document.getElementById('surveyModal').style.display = '
 function showAdminLogin() {
     const uname = prompt("Admin Username:");
     const pass = prompt("Admin Password:");
-    // UPDATED: Admin credentials changed per request
     if (uname === 'Dioch' && pass === 'enter1') {
         showPage('adminSection'); 
         loadAdminPanel();
@@ -596,6 +626,24 @@ function approvePayment(username,pkg,index){
 function deleteUser(username){
     if(confirm(`Are you sure you want to delete ${username}?`)){ localStorage.removeItem('user_'+username); loadAdminPanel(); }
 }
+
+// INSTALL LOGIC FOR BUTTON
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installContainer').style.display = 'block';
+
+    document.getElementById('btnInstall').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('installContainer').style.display = 'none';
+            }
+            deferredPrompt = null;
+        }
+    });
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = localStorage.getItem('currentUser');
