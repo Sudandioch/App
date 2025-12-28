@@ -16,13 +16,13 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{background:#1b1b1b;color:#fff;min-height:100vh;}
 
-/* HEADER & NAV ALIGNMENT FIXED - NO OVERLAP */
+/* HEADER & NAV ALIGNMENT FIXED */
 header{background:linear-gradient(135deg,#b48800,#ffd700);display:flex;justify-content:space-between;align-items:center;padding:15px 25px;position:sticky;top:0;z-index:1000;}
 header h1{color:#1b1b1b;font-size:1.8em;font-weight:bold; flex-shrink: 0;}
 
-/* Pushing buttons to the right and adding safety margin for hidden admin icon */
-.header-buttons{display:flex; gap:15px; flex-wrap: wrap; margin-left: auto; justify-content: flex-end; padding-right: 40px;}
-.header-buttons a{text-decoration:none;color:#1b1b1b;font-weight:600; cursor: pointer; font-size: 0.85em; white-space: nowrap; transition: 0.3s; display: flex; align-items: center; gap: 4px;}
+/* Navigation links pushed to the right */
+.header-buttons{display:flex; gap:18px; flex-wrap: wrap; margin-left: auto; justify-content: flex-end;}
+.header-buttons a{text-decoration:none;color:#1b1b1b;font-weight:600; cursor: pointer; font-size: 0.85em; white-space: nowrap; transition: 0.3s; display: flex; align-items: center; gap: 6px;}
 .header-buttons a:hover{transform:scale(1.05); opacity: 0.8;}
 .header-buttons a.logout-btn{color: #8b0000; margin-left: 5px; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 10px;}
 
@@ -34,7 +34,7 @@ header h1{color:#1b1b1b;font-size:1.8em;font-weight:bold; flex-shrink: 0;}
 .page{display:none;}
 button{padding:10px 16px;background:linear-gradient(135deg,#ffd700,#b48800);color:#1b1b1b;border:none;border-radius:6px;font-weight:700;cursor:pointer;transition:0.3s;}
 button:hover{transform:scale(1.05);background:linear-gradient(135deg,#b48800,#ffd700);}
-input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline:none;}
+input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline:none;background:#333;color:#fff;}
 .card{border:1px solid #ffd700;padding:16px;margin:15px 0;border-radius:10px;background:rgba(255,215,0,0.08);transition:0.3s;}
 .card:hover{transform:translateY(-5px);box-shadow:0 0 20px #ffd700;}
 .popup{position:fixed;top:20px;right:20px;background:#b48800;color:#1b1b1b;padding:12px;border-radius:6px;display:none;font-weight:bold;animation:popupAnim 0.5s ease-in-out;z-index:1002;}
@@ -71,10 +71,10 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 .link-note a{color:#ffd700;cursor:pointer;text-decoration:none;}
 
 /* Telegram Support Tab */
-#supportTab{position:fixed;right:15px;bottom:30px;background:#0088cc;color:white;padding:12px;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1003;transition:0.3s;}
-#supportTab:hover{transform:scale(1.2);background:#00acee;}
+#supportTab{position:fixed;right:20px;bottom:30px;color:#0088cc;z-index:1003;transition:0.3s;background:transparent;text-decoration:none;}
+#supportTab:hover{transform:scale(1.2);color:#00acee;}
 
-.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:10px;}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin-top:10px;}
 .ref-box {background: #333; padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px dashed #ffd700; font-size: 0.85em; word-break: break-all;}
 .team-grid {display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;}
 .team-item {background: rgba(255, 215, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);}
@@ -90,17 +90,17 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 <header>
 <h1>Survey Hub</h1>
 <div class="header-buttons" id="headerButtons" style="display:none;">
-<a onclick="showPage('dashboard')"><i class="fa-solid fa-house"></i> Dashboard</a>
-<a onclick="showPage('referral')"><i class="fa-solid fa-users"></i> Referral</a>
-<a onclick="showPage('withdraw')"><i class="fa-solid fa-wallet"></i> Withdraw</a>
-<a onclick="showPage('howItWorks')"><i class="fa-solid fa-info-circle"></i> How It Works</a>
-<a onclick="logout()" class="logout-btn"><i class="fa-solid fa-power-off"></i> Logout</a>
+<a onclick="showPage('dashboard')"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+<a onclick="showPage('referral')"><i class="fa-solid fa-sitemap"></i> Referral</a>
+<a onclick="showPage('withdraw')"><i class="fa-solid fa-money-bill-transfer"></i> Withdraw</a>
+<a onclick="showPage('howItWorks')"><i class="fa-solid fa-circle-question"></i> How It Works</a>
+<a onclick="logout()" class="logout-btn"><i class="fa-solid fa-door-open"></i> Logout</a>
 </div>
 <div id="adminIcon" title="Admin Panel" onclick="showAdminLogin()"></div>
 </header>
 
 <a href="https://t.me/Cattherineo" target="_blank" id="supportTab" title="Support">
-  <i class="fa-brands fa-telegram fa-2x"></i>
+  <i class="fa-brands fa-telegram fa-4x"></i>
 </a>
 
 <div class="popup" id="popup"></div>
@@ -108,6 +108,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 <div class="container page" id="login">
 <h2><i class="fa-solid fa-right-to-bracket"></i> Login</h2>
 <input id="loginUser" placeholder="Username">
+<input id="loginPhone" placeholder="Phone Number">
 <input id="loginPass" type="password" placeholder="Password">
 <button onclick="login()"><i class="fa-solid fa-arrow-right"></i> Login</button>
 <p class="link-note">Don't have an account? <a onclick="showPage('signup')">Signup here</a></p>
@@ -117,6 +118,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 <h2><i class="fa-solid fa-user-plus"></i> Signup</h2>
 <p id="refNotice" style="color:#ffd700; font-size:0.8em; display:none; margin-bottom:5px;">You are joining under: <b id="inviterName"></b></p>
 <input id="regUser" placeholder="Username">
+<input id="regPhone" placeholder="Phone Number">
 <input id="regPass" type="password" placeholder="Password">
 <button onclick="signup()"><i class="fa-solid fa-check"></i> Create Account</button>
 <p class="link-note">Already registered? <a onclick="showPage('login')">Login here</a></p>
@@ -184,6 +186,9 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
     <div class="team-item"><b>Group B</b><span id="countB">0</span><small>Level 2 (5%)</small></div>
     <div class="team-item"><b>Group C</b><span id="countC">0</span><small>Level 3 (2%)</small></div>
   </div>
+
+  <h4 style="margin-top:20px;">Referral Earnings History</h4>
+  <div id="referralHistory" style="font-size:0.85em; max-height: 200px; overflow-y: auto;"></div>
 </div>
 <button onclick="showPage('dashboard')">Back to Dashboard</button>
 </div>
@@ -207,7 +212,7 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 </div>
 
 <div class="container page" id="adminSection">
-<h2>Admin Panel</h2>
+<h2>Admin Management</h2>
 <button onclick="showPage('dashboard')">Back to Dashboard</button>
 <div class="admin-grid" id="adminUsers"></div>
 </div>
@@ -262,7 +267,6 @@ input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;outline
 </div>
 
 <script>
-// Global state variables
 let currentSurvey, currentQuestions, currentIndex;
 
 const popup = document.getElementById('popup');
@@ -280,7 +284,7 @@ function showPage(page) {
     const target = document.getElementById(page);
     if(target) target.style.display = 'block';
     if (page === 'dashboard') { loadUserData(); updatePackageStatus(); }
-    if (page === 'referral') { updateRefLink(); calculateTeam(); }
+    if (page === 'referral') { updateRefLink(); calculateTeam(); loadReferralHistory(); }
     if (page === 'withdraw') { loadUserData(); loadWithdrawHistory(); }
 }
 
@@ -293,13 +297,16 @@ function normalize(data) {
     if (!data.uplineA) data.uplineA = null;
     if (!data.uplineB) data.uplineB = null;
     if (!data.uplineC) data.uplineC = null;
+    if (!data.refEarnings) data.refEarnings = [];
+    if (!data.phone) data.phone = "N/A";
     return data;
 }
 
 function signup() {
     const u = document.getElementById('regUser').value.trim();
+    const ph = document.getElementById('regPhone').value.trim();
     const p = document.getElementById('regPass').value.trim();
-    if (!u || !p) { alert('Fill all fields'); return; }
+    if (!u || !p || !ph) { alert('Fill all fields'); return; }
     if (localStorage.getItem('user_' + u)) { alert('Username exists'); return; }
     let uplineA = referrerCode || null;
     let uplineB = null;
@@ -311,6 +318,7 @@ function signup() {
     }
     localStorage.setItem('user_' + u, JSON.stringify({
         pass: p,
+        phone: ph,
         packages: { starter: 0, standard: 0, premium: 0, bulk: 0 },
         points: 0,
         withdrawHistory: [],
@@ -318,7 +326,8 @@ function signup() {
         lastSurvey: {},
         uplineA: uplineA,
         uplineB: uplineB,
-        uplineC: uplineC
+        uplineC: uplineC,
+        refEarnings: []
     }));
     showPopup('Account created successfully'); 
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -348,7 +357,9 @@ function logout() {
 
 function updateRefLink() {
     const u = localStorage.getItem('currentUser');
-    const link = `${window.location.origin}${window.location.pathname}?ref=${u}`;
+    // FIXED: Uses origin + pathname to ensure it works on GitHub Pages subfolders
+    const baseUrl = window.location.origin + window.location.pathname;
+    const link = `${baseUrl}?ref=${u}`;
     document.getElementById('refLinkDisplay').innerText = link;
 }
 
@@ -372,6 +383,24 @@ function calculateTeam() {
     document.getElementById('countA').innerText = a;
     document.getElementById('countB').innerText = b;
     document.getElementById('countC').innerText = c;
+}
+
+function loadReferralHistory() {
+  const u = localStorage.getItem('currentUser');
+  const d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
+  const div = document.getElementById('referralHistory');
+  div.innerHTML = '';
+  if(!d.refEarnings || d.refEarnings.length === 0) {
+    div.innerHTML = '<p>No referral rewards yet.</p>';
+    return;
+  }
+  d.refEarnings.reverse().forEach(log => {
+    const p = document.createElement('p');
+    p.style.borderBottom = "1px solid #444";
+    p.style.padding = "5px 0";
+    p.innerHTML = `From <b>${log.from}</b> | Reward: <span style="color:#ffd700">+${log.pts} pts</span> | Level: ${log.level}`;
+    div.appendChild(p);
+  });
 }
 
 function loadUserData() {
@@ -464,12 +493,12 @@ function showNextSurveyQuestion() {
     if (currentIndex >= currentQuestions.length) {
         const u = localStorage.getItem('currentUser'); if (!u) return;
         let d = normalize(JSON.parse(localStorage.getItem('user_' + u)));
-        const pointsPerPackage = { starter: 15, standard: 30, premium: 50, bulk: 100 };
+        const pointsPerPackage = { starter: 15, standard: 92, premium: 272, bulk: 592 };
         const basePoints = pointsPerPackage[currentSurvey];
         d.points += basePoints;
         d.lastSurvey[currentSurvey] = new Date().toDateString();
         localStorage.setItem('user_' + u, JSON.stringify(d));
-        payUplines(basePoints, d);
+        payUplines(basePoints, d, u);
         loadUserData(); updatePackageStatus();
         showPopup(`Earned ${basePoints} points.`);
         closeSurvey();
@@ -488,17 +517,19 @@ function showNextSurveyQuestion() {
     document.getElementById('surveyModal').style.display = 'flex';
 }
 
-function payUplines(amount, user) {
-    if(user.uplineA) addPoints(user.uplineA, amount * 0.10);
-    if(user.uplineB) addPoints(user.uplineB, amount * 0.05);
-    if(user.uplineC) addPoints(user.uplineC, amount * 0.02);
+function payUplines(amount, user, childName) {
+    if(user.uplineA) addPoints(user.uplineA, amount * 0.10, childName, 'A');
+    if(user.uplineB) addPoints(user.uplineB, amount * 0.05, childName, 'B');
+    if(user.uplineC) addPoints(user.uplineC, amount * 0.02, childName, 'C');
 }
 
-function addPoints(username, pts) {
+function addPoints(username, pts, fromUser, level) {
     let raw = localStorage.getItem('user_' + username);
     if(raw) {
         let d = JSON.parse(raw);
         d.points += pts;
+        if(!d.refEarnings) d.refEarnings = [];
+        d.refEarnings.push({ from: fromUser, pts: pts.toFixed(2), level: level, date: new Date().toLocaleDateString() });
         localStorage.setItem('user_' + username, JSON.stringify(d));
     }
 }
@@ -508,9 +539,12 @@ function closeSurvey(){ document.getElementById('surveyModal').style.display = '
 function showAdminLogin() {
     const uname = prompt("Admin Username:");
     const pass = prompt("Admin Password:");
-    if (uname === 'admin' && pass === 'password') {
+    // UPDATED: Admin credentials changed per request
+    if (uname === 'Dioch' && pass === 'enter1') {
         showPage('adminSection'); 
         loadAdminPanel();
+    } else {
+        alert("Invalid Admin Credentials");
     }
 }
 
@@ -523,14 +557,20 @@ function loadAdminPanel() {
             const data = normalize(JSON.parse(localStorage.getItem(key)));
             const username = key.replace('user_', '');
             const uCard = document.createElement('div'); uCard.className='card';
-            uCard.innerHTML = `<h4>${username}</h4><p>Pts: ${Math.floor(data.points)}</p>
-            <button onclick="deleteUser('${username}')">Delete</button>`;
+            uCard.innerHTML = `
+              <h4 style="color:#ffd700;">User: ${username}</h4>
+              <p><b>Password:</b> ${data.pass}</p>
+              <p><b>Phone:</b> ${data.phone}</p>
+              <p><b>Points:</b> ${Math.floor(data.points)}</p>
+              <button onclick="deleteUser('${username}')" style="background:#8b0000; color:#fff; margin-top:5px;">Delete User</button>`;
             usersGrid.appendChild(uCard);
+            
             if (data.pendingPayment && data.pendingPayment.length>0){
                 data.pendingPayment.forEach((pkg,index)=>{
                     const pCard=document.createElement('div');pCard.className='card';
-                    pCard.innerHTML = `<h4>${username}</h4><p>Pending: ${pkg}</p>
-                    <button onclick="approvePayment('${username}','${pkg}',${index})">Approve</button>`;
+                    pCard.style.border = "1px solid #00ff00";
+                    pCard.innerHTML = `<h4>PENDING PAYMENT: ${username}</h4><p>Package: ${pkg}</p>
+                    <button onclick="approvePayment('${username}','${pkg}',${index})">Approve Payment</button>`;
                     usersGrid.appendChild(pCard);
                 });
             }
@@ -547,16 +587,16 @@ function approvePayment(username,pkg,index){
     localStorage.setItem('user_'+username,JSON.stringify(data));
     if(data.uplineA) {
         let bonus = pkg === 'standard' ? 70 : pkg === 'premium' ? 250 : pkg === 'bulk' ? 400 : 0;
-        addPoints(data.uplineA, bonus);
+        addPoints(data.uplineA, bonus, username, 'Activation Bonus');
     }
     loadAdminPanel(); updatePackageStatus();
+    showPopup('Package Activated');
 }
 
 function deleteUser(username){
-    if(confirm(`Delete ${username}?`)){ localStorage.removeItem('user_'+username); loadAdminPanel(); }
+    if(confirm(`Are you sure you want to delete ${username}?`)){ localStorage.removeItem('user_'+username); loadAdminPanel(); }
 }
 
-// THE FIX: Wait for elements to exist before showing the login page
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = localStorage.getItem('currentUser');
     if(currentUser) {
@@ -570,7 +610,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inviterName').innerText = referrerCode;
     }
 });
+
+// PWA SERVICE WORKER REGISTRATION
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered'))
+      .catch(err => console.log('Service Worker registration failed', err));
+  });
+}
 </script>
 </body>
 </html>
-
